@@ -1,6 +1,7 @@
 package components
 
 import (
+	"github.com/grafana/grafana-foundation-sdk/go/common"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 )
@@ -13,6 +14,9 @@ type TimeSeriesPanel struct {
 	Targets         []*PrometheusQuery
 	Transparent     bool
 	Transformations []dashboard.DataTransformerConfig
+	Thresholds      *dashboard.ThresholdsConfig
+	ColorMode       *dashboard.FieldColorModeId
+	GradientMode    *string
 }
 
 func NewTimeSeriesPanel(title, description string, gridPos dashboard.GridPos) *TimeSeriesPanel {
@@ -41,6 +45,19 @@ func (p *TimeSeriesPanel) WithTransformations(transformations []dashboard.DataTr
 	return p
 }
 
+func (p *TimeSeriesPanel) WithThresholds(mode dashboard.ThresholdsMode, steps []dashboard.Threshold) *TimeSeriesPanel {
+	p.Thresholds = &dashboard.ThresholdsConfig{
+		Mode:  mode,
+		Steps: steps,
+	}
+	thresholdsColorMode := dashboard.FieldColorModeId("thresholds")
+	p.ColorMode = &thresholdsColorMode
+
+	gradientMode := "scheme"
+	p.GradientMode = &gradientMode
+	return p
+}
+
 func (p *TimeSeriesPanel) Build() *timeseries.PanelBuilder {
 	builder := timeseries.NewPanelBuilder().
 		Title(p.Title).
@@ -66,6 +83,19 @@ func (p *TimeSeriesPanel) Build() *timeseries.PanelBuilder {
 		if p.Datasource.Max != nil {
 			builder = builder.Max(*p.Datasource.Max)
 		}
+	}
+
+	if p.Thresholds != nil {
+		thresholdBuilder := dashboard.NewThresholdsConfigBuilder()
+		thresholdBuilder.Mode(p.Thresholds.Mode)
+		thresholdBuilder.Steps(p.Thresholds.Steps)
+		builder = builder.Thresholds(thresholdBuilder)
+	}
+
+	if p.ColorMode != nil {
+		colorBuilder := dashboard.NewFieldColorBuilder().Mode(*p.ColorMode)
+		builder = builder.ColorScheme(colorBuilder)
+		builder.GradientMode(common.GraphGradientMode("scheme"))
 	}
 
 	for _, target := range p.Targets {

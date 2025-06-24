@@ -16,6 +16,8 @@ type StatPanel struct {
 	Mappings        []dashboard.ValueMapping
 	Transformations []dashboard.DataTransformerConfig
 	Options         *StatPanelOptions
+	Thresholds      *dashboard.ThresholdsConfig
+	ColorMode       *dashboard.FieldColorModeId
 }
 
 type StatPanelOptions struct {
@@ -72,6 +74,18 @@ func (p *StatPanel) WithOptions(options *StatPanelOptions) *StatPanel {
 	return p
 }
 
+// WithThresholds configures custom thresholds for the stat panel
+func (p *StatPanel) WithThresholds(mode dashboard.ThresholdsMode, steps []dashboard.Threshold) *StatPanel {
+	p.Thresholds = &dashboard.ThresholdsConfig{
+		Mode:  mode,
+		Steps: steps,
+	}
+	thresholdsColorMode := dashboard.FieldColorModeId("thresholds")
+	p.ColorMode = &thresholdsColorMode
+
+	return p
+}
+
 func (p *StatPanel) Build() *stat.PanelBuilder {
 	builder := stat.NewPanelBuilder().
 		Title(p.Title).
@@ -109,6 +123,18 @@ func (p *StatPanel) Build() *stat.PanelBuilder {
 
 	if len(p.Transformations) > 0 {
 		builder = builder.Transformations(p.Transformations)
+	}
+
+	if p.Thresholds != nil {
+		thresholdBuilder := dashboard.NewThresholdsConfigBuilder()
+		thresholdBuilder.Mode(p.Thresholds.Mode)
+		thresholdBuilder.Steps(p.Thresholds.Steps)
+		builder = builder.Thresholds(thresholdBuilder)
+	}
+
+	if p.ColorMode != nil {
+		colorBuilder := dashboard.NewFieldColorBuilder().Mode(*p.ColorMode)
+		builder = builder.ColorScheme(colorBuilder)
 	}
 
 	if p.Options != nil {

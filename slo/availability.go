@@ -199,7 +199,17 @@ func (slo *AvailabilitySLO) buildSliRow() {
 		dashboard.GridPos{H: 7, W: 19, X: 0, Y: 4},
 	).WithDatasource(sliDS).
 		WithTarget(sliTarget1).
-		WithTarget(sliTarget2)
+		WithTarget(sliTarget2).
+		WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+			{
+				Color: "red",
+				Value: float64Ptr(0),
+			},
+			{
+				Color: "green",
+				Value: float64Ptr(slo.Target),
+			},
+		})
 	slo.dashboard.WithPanel(sliPanel)
 
 	// SLI 28d stat panel
@@ -222,7 +232,16 @@ func (slo *AvailabilitySLO) buildSliRow() {
 		"SLI (last 28d)",
 		"Service level indicator's value over the last 28d",
 		dashboard.GridPos{H: 7, W: 5, X: 19, Y: 4},
-	).WithDatasource(sli28dDS).WithTarget(sli28dTarget)
+	).WithDatasource(sli28dDS).WithTarget(sli28dTarget).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "red",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "green",
+			Value: float64Ptr(slo.Target),
+		},
+	})
 	slo.dashboard.WithPanel(sli28dPanel)
 }
 

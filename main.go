@@ -9,7 +9,7 @@ import (
 
 func main() {
 	latencySLO := slo.NewLatencySLO(
-		"monthly-agenda-latency-slo-go",
+		"monthly-agenda-latency-slo",
 		"Agenda Monthly Latency SLO - 95% requests < 250ms over 28 days",
 		"Dashboard to track the monthly latency of the Agenda service: 95% of requests should have latency < 250ms",
 		"28d",

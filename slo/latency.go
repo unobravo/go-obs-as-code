@@ -196,7 +196,16 @@ func (slo *LatencySLO) buildSliRow() {
 		"SLI",
 		"Service level indicator",
 		dashboard.GridPos{H: 7, W: 19, X: 0, Y: 4},
-	).WithDatasource(sliDS).WithTarget(sliTarget)
+	).WithDatasource(sliDS).WithTarget(sliTarget).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "red",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "green",
+			Value: float64Ptr(slo.Target),
+		},
+	})
 	slo.dashboard.WithPanel(sliPanel)
 
 	// SLI 28d stat panel
@@ -214,7 +223,16 @@ func (slo *LatencySLO) buildSliRow() {
 		"SLI (last 28d)",
 		"Service level indicator's value over the last 28d",
 		dashboard.GridPos{H: 7, W: 5, X: 19, Y: 4},
-	).WithDatasource(sli28dDS).WithTarget(sli28dTarget)
+	).WithDatasource(sli28dDS).WithTarget(sli28dTarget).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "red",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "green",
+			Value: float64Ptr(slo.Target),
+		},
+	})
 	slo.dashboard.WithPanel(sli28dPanel)
 }
 
@@ -374,7 +392,20 @@ func (slo *LatencySLO) buildErrorBudgetRow() {
 					"replaceFields": true,
 				},
 			},
-		})
+		}).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "red",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "yellow",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "green",
+			Value: float64Ptr(0.2),
+		},
+	})
 	slo.dashboard.WithPanel(budgetTrendPanel)
 
 	// Remaining error budget
@@ -392,7 +423,20 @@ func (slo *LatencySLO) buildErrorBudgetRow() {
 		"Remaining Error Budget",
 		"The unspent error budget over the last 28d window",
 		dashboard.GridPos{H: 7, W: 5, X: 19, Y: 11},
-	).WithDatasource(remainingBudgetDS).WithTarget(remainingBudgetTarget)
+	).WithDatasource(remainingBudgetDS).WithTarget(remainingBudgetTarget).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "red",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "yellow",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "green",
+			Value: float64Ptr(0.2),
+		},
+	})
 	slo.dashboard.WithPanel(remainingBudgetPanel)
 }
 
@@ -410,7 +454,20 @@ func (slo *LatencySLO) buildBurnRateRow() {
 		"Error Budget Burn Rate",
 		"The burn rate is the rate that this SLO is spending its error budget over last 5 min [0, 1.0]. A 1x burn rate will consume the entire error budget allotted for that period.",
 		dashboard.GridPos{H: 7, W: 19, X: 0, Y: 18},
-	).WithDatasource(burnRateDS).WithTarget(burnRateTarget)
+	).WithDatasource(burnRateDS).WithTarget(burnRateTarget).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "green",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "yellow",
+			Value: float64Ptr(1),
+		},
+		{
+			Color: "red",
+			Value: float64Ptr(3),
+		},
+	})
 	slo.dashboard.WithPanel(burnRatePanel)
 
 	// Current burn rate stat
@@ -426,7 +483,20 @@ func (slo *LatencySLO) buildBurnRateRow() {
 		"Current Burn Rate",
 		"The burn rate is the rate that this SLO is spending its error budget over last 5 min [0, 1.0]. A 1x burn rate will consume the entire error budget allotted for that period.",
 		dashboard.GridPos{H: 7, W: 5, X: 19, Y: 18},
-	).WithDatasource(currentBurnDS).WithTarget(currentBurnTarget)
+	).WithDatasource(currentBurnDS).WithTarget(currentBurnTarget).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "green",
+			Value: float64Ptr(0),
+		},
+		{
+			Color: "yellow",
+			Value: float64Ptr(1),
+		},
+		{
+			Color: "red",
+			Value: float64Ptr(3),
+		},
+	})
 	slo.dashboard.WithPanel(currentBurnPanel)
 }
 
@@ -444,6 +514,15 @@ func (slo *LatencySLO) buildEventRateRow() {
 		"Event Rate",
 		"Total Rate (for SLIs that compare rate of successful events to rate of total events, this is the latter)",
 		dashboard.GridPos{H: 7, W: 24, X: 0, Y: 25},
-	).WithDatasource(eventRateDS).WithTarget(eventRateTarget)
+	).WithDatasource(eventRateDS).WithTarget(eventRateTarget).WithThresholds(dashboard.ThresholdsModeAbsolute, []dashboard.Threshold{
+		{
+			Color: "red",
+			Value: float64Ptr(80),
+		},
+		{
+			Color: "green",
+			Value: float64Ptr(0),
+		},
+	})
 	slo.dashboard.WithPanel(eventRatePanel)
 }
