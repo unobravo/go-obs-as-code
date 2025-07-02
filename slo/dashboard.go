@@ -21,7 +21,7 @@ func NewDashboard(uid, title, description string) *Dashboard {
 		Description(description).
 		Editable().
 		Time("now-28d", "now").
-		Tags([]string{"observability-as-code", "slo"})
+		Tags([]string{"slo"})
 
 	return &Dashboard{
 		UID:         uid,
