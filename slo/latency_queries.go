@@ -19,13 +19,13 @@ func NewLatencyQueries(successMetric, totalMetric string, target float64, timeWi
 }
 
 func (q *LatencyQueries) SLIQuery() string {
-	return fmt.Sprintf(`((sum(rate(%s[$__rate_interval] offset 2m)) or 0 * sum(rate(%s[$__rate_interval] offset 2m))) / (sum(rate(%s[$__rate_interval] offset 2m))))`,
-		q.SuccessMetric, q.SuccessMetric, q.TotalMetric)
+	return fmt.Sprintf(`((sum(rate(%s[5m] offset 2m)) or 0 * sum(rate(%s[5m] offset 2m))) / (sum(rate(%s[5m] offset 2m))))`,
+		q.SuccessMetric, q.TotalMetric, q.TotalMetric)
 }
 
 func (q *LatencyQueries) SLITimeWindowQuery() string {
-	return fmt.Sprintf(`sum(sum_over_time(rate(%s[5m])[%s:4h])) / sum(sum_over_time(rate(%s[5m])[%s:4h]))`,
-		q.SuccessMetric, q.TimeWindow, q.TotalMetric, q.TimeWindow)
+	return fmt.Sprintf(`sum(sum_over_time((sum(rate(%s[5m] offset 2m)) or 0 * sum(rate(%s[5m] offset 2m)) < 1e308)[28d:5m])) / sum(sum_over_time((sum(rate(%s[5m] offset 2m)) < 1e308)[28d:5m]))`,
+		q.SuccessMetric, q.TotalMetric, q.TotalMetric)
 }
 
 func (q *LatencyQueries) FastBurnRateQuery() string {
@@ -98,21 +98,23 @@ func (q *LatencyQueries) ErrorBudgetTrendQuery() string {
 }
 
 func (q *LatencyQueries) RemainingErrorBudgetQuery() string {
-	return q.ErrorBudgetTrendQuery()
+	return fmt.Sprintf(`(sum(sum_over_time((sum(rate(%s[5m] offset 2m))< 1e308)[%s:5m])) / sum(sum_over_time((sum(rate(%s[5m] offset 2m))< 1e308
+      )[%s:5m])) - %f) / (1 - %f)`,
+		q.SuccessMetric, q.TimeWindow, q.TotalMetric, q.TimeWindow, q.Target, q.Target)
 }
 
 func (q *LatencyQueries) BurnRateQuery() string {
-	return fmt.Sprintf(`(1 - avg_over_time((((sum(rate(%s[5m])) or 0 * sum(rate(%s[5m]))) / (sum(rate(%s[5m])))))[$__interval:])) / (1 - %f)`,
-		q.SuccessMetric, q.SuccessMetric, q.TotalMetric, q.Target)
+	return fmt.Sprintf(`avg(1 - avg_over_time(((sum(rate(%s[5m] offset 2m)) / (sum(rate(%s[5m] offset 2m)))) < 1e308)[$__interval:])) / (1 - %f)`,
+		q.SuccessMetric, q.TotalMetric, q.Target)
 }
 
 func (q *LatencyQueries) InstantBurnRateQuery() string {
-	return fmt.Sprintf(`(1 - avg_over_time((((sum(rate(%s[5m])) or 0 * sum(rate(%s[5m]))) / (sum(rate(%s[5m])))))[$__interval:])) / (1 - %f)`,
-		q.SuccessMetric, q.SuccessMetric, q.TotalMetric, q.Target)
+	return fmt.Sprintf(`avg(1 - avg_over_time(((sum(rate(%s[5m] offset 2m)) / sum(rate(%s[5m] offset 2m)))< 1e308)[$__interval:])) / (1 - %f)`,
+		q.SuccessMetric, q.TotalMetric, q.Target)
 }
 
 func (q *LatencyQueries) EventRateQuery() string {
-	return fmt.Sprintf(`sum(rate(%s[$__rate_interval] offset 2m))`, q.TotalMetric)
+	return fmt.Sprintf(`sum(avg_over_time((sum(rate(%s[5m] offset 2m)))[$__interval:]))`, q.TotalMetric)
 }
 
 func (q *LatencyQueries) BurndownFailureEventsQuery() string {
@@ -121,6 +123,6 @@ func (q *LatencyQueries) BurndownFailureEventsQuery() string {
 }
 
 func (q *LatencyQueries) BurndownTotalEventsQuery() string {
-	return fmt.Sprintf(`300 * sum(sum_over_time(rate(%s[5m])[$__range:5m] @ ${__to:date:seconds} offset 1s))`,
+	return fmt.Sprintf(`300 * sum(sum_over_time((sum(rate(%s[5m] offset 2m)) < 1e308)[$__range:5m] @ ${__to:date:seconds} offset 1s))`,
 		q.TotalMetric)
 }

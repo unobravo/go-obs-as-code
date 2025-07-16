@@ -20,7 +20,7 @@ func NewDashboard(uid, title, description string) *Dashboard {
 		Uid(uid).
 		Description(description).
 		Editable().
-		Time("now-28d", "now").
+		Time("now-6h", "now").
 		Tags([]string{"slo"})
 
 	return &Dashboard{
